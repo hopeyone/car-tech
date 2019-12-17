@@ -1,0 +1,46 @@
+{
+  "generator-jhipster": {
+    "applicationType": "monolith",
+    "gitCompany": "",
+    "baseName": "CarTech",
+    "packageName": "com.mrhopeyone",
+    "packageFolder": "com/mrhopeyone",
+    "serverPort": 8080,
+    "serviceDiscoveryType": false,
+    "authenticationType": "jwt",
+    "uaaBaseName": "../uaa",
+    "cacheProvider": "ehcache",
+    "enableHibernateCache": true,
+    "websocket": false,
+    "databaseType": "sql",
+    "devDatabaseType": "h2Disk",
+    "prodDatabaseType": "mysql",
+    "searchEngine": false,
+    "enableSwaggerCodegen": false,
+    "messageBroker": false,
+    "buildTool": "maven",
+    "useSass": true,
+    "clientPackageManager": "npm",
+    "testFrameworks": [
+      "cucumber"
+    ],
+    "enableTranslation": true,
+    "nativeLanguage": "en",
+    "languages": [
+      "en"
+    ],
+    "clientFramework": "angularX",
+    "jhiPrefix": "jhi",
+    "jhipsterVersion": "6.5.1",
+    "jwtSecretKey": "ZWYzMjQ4NTBjMzU3MWVmM2Q1NWY5NzJmM2JhYjdlYjZiMDIzMWI1MGM3YjA2NzY1NjRhZGJjYTBlNDgwNmJlYzUwMmM2NTM0MGQ3MzM5ZTg1ZGJmZTU2MGM3NjI1NzkxNzE2YjFkZjczYjM5OTg5YWRlYjkxM2MxYjc2MDZkYTM=",
+    "embeddableLaunchScript": false,
+    "clientTheme": "none",
+    "entitySuffix": "",
+    "dtoSuffix": "DTO",
+    "otherModules": [],
+    "blueprints": []
+  },
+  "git-provider": "GitHub",
+  "git-company": "hopeyone",
+  "repository-name": "car-tech"
+}
