@@ -1,4 +1,5 @@
 package com.mrhopeyone.domain;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -33,8 +34,9 @@ public class Document implements Serializable {
     @Column(name = "mime_type")
     private String mimeType;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(unique = true)
+    @JsonIgnore
     private Content content;
 
     @ManyToOne(optional = false)
@@ -94,15 +96,17 @@ public class Document implements Serializable {
         return content;
     }
 
-    public Document content(Content content) {
-        this.content = content;
-        return this;
+    public void addContent(byte[] data) {
+    	Content content = new Content();
+    	content.setData(data);
+    	content.setDataContentType("not-used");
+    	this.content = content;
     }
-
-    public void setContent(Content content) {
-        this.content = content;
+    
+    public byte[] retrieveContent() {
+    	return content.getData();
     }
-
+    
     public Car getCar() {
         return car;
     }

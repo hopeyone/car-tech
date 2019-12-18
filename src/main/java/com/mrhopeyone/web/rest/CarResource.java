@@ -1,7 +1,9 @@
 package com.mrhopeyone.web.rest;
 
 import com.mrhopeyone.domain.Car;
+import com.mrhopeyone.domain.Document;
 import com.mrhopeyone.repository.CarRepository;
+import com.mrhopeyone.service.mapper.DocumentMapper;
 import com.mrhopeyone.web.rest.errors.BadRequestAlertException;
 
 import io.github.jhipster.web.util.HeaderUtil;
@@ -12,13 +14,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional; 
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * REST controller for managing {@link com.mrhopeyone.domain.Car}.
@@ -36,9 +42,11 @@ public class CarResource {
     private String applicationName;
 
     private final CarRepository carRepository;
+    private final DocumentMapper documentMapper;
 
-    public CarResource(CarRepository carRepository) {
+    public CarResource(CarRepository carRepository, DocumentMapper documentMapper) {
         this.carRepository = carRepository;
+        this.documentMapper = documentMapper;
     }
 
     /**
@@ -54,6 +62,28 @@ public class CarResource {
         if (car.getId() != null) {
             throw new BadRequestAlertException("A new car cannot already have an ID", ENTITY_NAME, "idexists");
         }
+        Car result = carRepository.save(car);
+        return ResponseEntity.created(new URI("/api/cars/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+            .body(result);
+    }
+    
+    /**
+     * {@code POST  /cars} : Create a new car.
+     *
+     * @param car the car to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new car, or with status {@code 400 (Bad Request)} if the car has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/v2/cars")
+    public ResponseEntity<Car> createCar(@Valid @RequestPart Car car, @RequestPart List<MultipartFile> files) throws URISyntaxException, IOException {
+        log.debug("REST request to save v2 Car : {}", car);
+        if (car.getId() != null) {
+            throw new BadRequestAlertException("A new car cannot already have an ID", ENTITY_NAME, "idexists");
+        }
+        Set<Document> documents = documentMapper.multiPartFilesToDocuments(files);
+        documents.forEach(car::addDocument);
+        
         Car result = carRepository.save(car);
         return ResponseEntity.created(new URI("/api/cars/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))

@@ -1,7 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import * as FileSaver from 'file-saver';
 
 import { ICar } from 'app/shared/model/car.model';
+import { DocumentService } from '../document/document.service';
+import { IDocument } from 'app/shared/model/document.model';
 
 @Component({
   selector: 'jhi-car-detail',
@@ -10,7 +13,8 @@ import { ICar } from 'app/shared/model/car.model';
 export class CarDetailComponent implements OnInit {
   car: ICar;
 
-  constructor(protected activatedRoute: ActivatedRoute) {}
+  constructor(protected activatedRoute: ActivatedRoute,
+				protected documentService: DocumentService) {}
 
   ngOnInit() {
     this.activatedRoute.data.subscribe(({ car }) => {
@@ -18,6 +22,11 @@ export class CarDetailComponent implements OnInit {
     });
   }
 
+  downloadDocument(document: IDocument) {
+	this.documentService.download(document.id).subscribe(file => {
+	  FileSaver.saveAs(file, document.title);
+    });
+}
   previousState() {
     window.history.back();
   }

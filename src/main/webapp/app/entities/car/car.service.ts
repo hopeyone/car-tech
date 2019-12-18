@@ -12,12 +12,27 @@ type EntityArrayResponseType = HttpResponse<ICar[]>;
 @Injectable({ providedIn: 'root' })
 export class CarService {
   public resourceUrl = SERVER_API_URL + 'api/cars';
+  public resourceUrlV2 = SERVER_API_URL + 'api/v2/cars';
 
   constructor(protected http: HttpClient) {}
 
   create(car: ICar): Observable<EntityResponseType> {
     return this.http.post<ICar>(this.resourceUrl, car, { observe: 'response' });
   }
+
+	createV2(car: ICar, files: FileList): Observable<EntityResponseType> {
+	   const carMultipartFormParam = 'car';
+	   const filesMultipartFormParam = 'files';
+	   const formData: FormData = new FormData();
+	   const carAsJsonBlob: Blob = new Blob([JSON.stringify(car)], {type: 'application/json'});
+	
+	   formData.append(carMultipartFormParam, carAsJsonBlob);
+	   for (let i = 0; i < files.length; i++) {
+	       formData.append(filesMultipartFormParam, files.item(i));
+	   }
+	
+	   return this.http.post<ICar>(this.resourceUrlV2, formData, { observe: 'response' });
+	}
 
   update(car: ICar): Observable<EntityResponseType> {
     return this.http.put<ICar>(this.resourceUrl, car, { observe: 'response' });

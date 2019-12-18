@@ -3,6 +3,7 @@ package com.mrhopeyone.web.rest;
 import com.mrhopeyone.CarTechApp;
 import com.mrhopeyone.domain.Car;
 import com.mrhopeyone.repository.CarRepository;
+import com.mrhopeyone.service.mapper.DocumentMapper;
 import com.mrhopeyone.web.rest.errors.ExceptionTranslator;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -40,6 +41,9 @@ public class CarResourceIT {
     private CarRepository carRepository;
 
     @Autowired
+    private DocumentMapper documentMapper;
+    
+    @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Autowired
@@ -61,7 +65,7 @@ public class CarResourceIT {
     @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final CarResource carResource = new CarResource(carRepository);
+        final CarResource carResource = new CarResource(carRepository, documentMapper);
         this.restCarMockMvc = MockMvcBuilders.standaloneSetup(carResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)

@@ -1,5 +1,8 @@
 package com.mrhopeyone.repository;
 import com.mrhopeyone.domain.Document;
+
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
@@ -11,4 +14,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface DocumentRepository extends JpaRepository<Document, Long> {
 
+	@EntityGraph(attributePaths = "content")
+	Optional<Document> findOneById(Long id);
 }
