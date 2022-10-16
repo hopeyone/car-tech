@@ -3,6 +3,7 @@
     "document": {
       "home": {
         "title": "Documents",
+        "refreshListLabel": "Refresh list",
         "createLabel": "Create a new Document",
         "createOrEditLabel": "Create or edit a Document",
         "notFound": "No Documents found"
@@ -16,6 +17,7 @@
       "detail": {
         "title": "Document"
       },
+      "id": "ID",
       "title": "Title",
       "size": "Size",
       "mimeType": "Mime Type",

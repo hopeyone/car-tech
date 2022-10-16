@@ -10,6 +10,8 @@
         "car": "Car",
         "document": "Document",
         "content": "Content",
+        "group": "Group",
+        "toDont": "To Dont",
         "jhipster-needle-menu-add-entry": "JHipster will add additional entities here (do not translate!)"
       },
       "account": {

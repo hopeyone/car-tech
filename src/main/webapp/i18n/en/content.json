@@ -3,6 +3,7 @@
     "content": {
       "home": {
         "title": "Contents",
+        "refreshListLabel": "Refresh list",
         "createLabel": "Create a new Content",
         "createOrEditLabel": "Create or edit a Content",
         "notFound": "No Contents found"
@@ -16,6 +17,7 @@
       "detail": {
         "title": "Content"
       },
+      "id": "ID",
       "data": "Data",
       "document": "Document"
     }

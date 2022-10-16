@@ -1,142 +1,149 @@
 package com.mrhopeyone.domain;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.io.Serializable;
 import javax.persistence.*;
 import javax.validation.constraints.*;
-
-import java.io.Serializable;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 /**
  * A Document.
  */
 @Entity
 @Table(name = "document")
-@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@SuppressWarnings("common-java:DuplicatedBlocks")
 public class Document implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "id")
+  private Long id;
 
-    @NotNull
-    @Column(name = "title", nullable = false)
-    private String title;
+  @NotNull
+  @Column(name = "title", nullable = false)
+  private String title;
 
-    @NotNull
-    @Column(name = "size", nullable = false)
-    private Long size;
+  @NotNull
+  @Column(name = "size", nullable = false)
+  private Long size;
 
-    @Column(name = "mime_type")
-    private String mimeType;
+  @Column(name = "mime_type")
+  private String mimeType;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(unique = true)
-    @JsonIgnore
-    private Content content;
+  @JsonIgnoreProperties(value = { "document" }, allowSetters = true)
+  @OneToOne
+  @JoinColumn(unique = true)
+  private Content content;
 
-    @ManyToOne(optional = false)
-    @NotNull
-    @JsonIgnoreProperties("documents")
-    private Car car;
+  @ManyToOne(optional = false)
+  @NotNull
+  @JsonIgnoreProperties(value = { "documents" }, allowSetters = true)
+  private Car car;
 
-    // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
-    public Long getId() {
-        return id;
+  // jhipster-needle-entity-add-field - JHipster will add fields here
+
+  public Long getId() {
+    return this.id;
+  }
+
+  public Document id(Long id) {
+    this.setId(id);
+    return this;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
+
+  public String getTitle() {
+    return this.title;
+  }
+
+  public Document title(String title) {
+    this.setTitle(title);
+    return this;
+  }
+
+  public void setTitle(String title) {
+    this.title = title;
+  }
+
+  public Long getSize() {
+    return this.size;
+  }
+
+  public Document size(Long size) {
+    this.setSize(size);
+    return this;
+  }
+
+  public void setSize(Long size) {
+    this.size = size;
+  }
+
+  public String getMimeType() {
+    return this.mimeType;
+  }
+
+  public Document mimeType(String mimeType) {
+    this.setMimeType(mimeType);
+    return this;
+  }
+
+  public void setMimeType(String mimeType) {
+    this.mimeType = mimeType;
+  }
+
+  public Content getContent() {
+    return this.content;
+  }
+
+  public void setContent(Content content) {
+    this.content = content;
+  }
+
+  public Document content(Content content) {
+    this.setContent(content);
+    return this;
+  }
+
+  public Car getCar() {
+    return this.car;
+  }
+
+  public void setCar(Car car) {
+    this.car = car;
+  }
+
+  public Document car(Car car) {
+    this.setCar(car);
+    return this;
+  }
+
+  // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
     }
+    if (!(o instanceof Document)) {
+      return false;
+    }
+    return id != null && id.equals(((Document) o).id);
+  }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+  @Override
+  public int hashCode() {
+    // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
+    return getClass().hashCode();
+  }
 
-    public String getTitle() {
-        return title;
-    }
-
-    public Document title(String title) {
-        this.title = title;
-        return this;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public Long getSize() {
-        return size;
-    }
-
-    public Document size(Long size) {
-        this.size = size;
-        return this;
-    }
-
-    public void setSize(Long size) {
-        this.size = size;
-    }
-
-    public String getMimeType() {
-        return mimeType;
-    }
-
-    public Document mimeType(String mimeType) {
-        this.mimeType = mimeType;
-        return this;
-    }
-
-    public void setMimeType(String mimeType) {
-        this.mimeType = mimeType;
-    }
-
-    public Content getContent() {
-        return content;
-    }
-
-    public void addContent(byte[] data) {
-    	Content content = new Content();
-    	content.setData(data);
-    	content.setDataContentType("not-used");
-    	this.content = content;
-    }
-    
-    public byte[] retrieveContent() {
-    	return content.getData();
-    }
-    
-    public Car getCar() {
-        return car;
-    }
-
-    public Document car(Car car) {
-        this.car = car;
-        return this;
-    }
-
-    public void setCar(Car car) {
-        this.car = car;
-    }
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof Document)) {
-            return false;
-        }
-        return id != null && id.equals(((Document) o).id);
-    }
-
-    @Override
-    public int hashCode() {
-        return 31;
-    }
-
+  // prettier-ignore
     @Override
     public String toString() {
         return "Document{" +

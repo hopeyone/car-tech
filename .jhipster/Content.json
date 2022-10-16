@@ -1,33 +1,31 @@
 {
-    "name": "Content",
-    "fields": [
-        {
-            "fieldName": "data",
-            "fieldType": "byte[]",
-            "fieldTypeBlobContent": "any",
-            "fieldValidateRules": [
-                "required"
-            ]
-        }
-    ],
-    "relationships": [
-        {
-            "relationshipType": "one-to-one",
-            "otherEntityName": "document",
-            "otherEntityRelationshipName": "content",
-            "relationshipValidateRules": "required",
-            "relationshipName": "document",
-            "ownerSide": false
-        }
-    ],
-    "changelogDate": "20191217061439",
-    "entityTableName": "content",
-    "dto": "no",
-    "pagination": "no",
-    "service": "no",
-    "jpaMetamodelFiltering": false,
-    "fluentMethods": true,
-    "readOnly": false,
-    "clientRootFolder": "",
-    "applications": "*"
+  "applications": "*",
+  "changelogDate": "20191217061439",
+  "clientRootFolder": "",
+  "dto": "no",
+  "entityTableName": "content",
+  "fields": [
+    {
+      "fieldName": "data",
+      "fieldType": "byte[]",
+      "fieldTypeBlobContent": "any",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "name": "Content",
+  "pagination": "no",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityName": "document",
+      "otherEntityRelationshipName": "content",
+      "ownerSide": false,
+      "relationshipName": "document",
+      "relationshipType": "one-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ],
+  "service": "no"
 }

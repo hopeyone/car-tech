@@ -1,0 +1,42 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <div *ngIf="toDont">
+      <h2 data-cy="toDontDetailsHeading"><span jhiTranslate="carTechApp.toDont.detail.title">To Dont</span></h2>
+
+      <hr />
+
+      <jhi-alert-error></jhi-alert-error>
+
+      <jhi-alert></jhi-alert>
+
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ toDont.id }}</span>
+        </dd>
+        <dt><span jhiTranslate="carTechApp.toDont.title">Title</span></dt>
+        <dd>
+          <span>{{ toDont.title }}</span>
+        </dd>
+        <dt><span jhiTranslate="carTechApp.toDont.description">Description</span></dt>
+        <dd>
+          <span>{{ toDont.description }}</span>
+        </dd>
+        <dt><span jhiTranslate="carTechApp.toDont.group">Group</span></dt>
+        <dd>
+          <div *ngIf="toDont.group">
+            <a [routerLink]="['/group', toDont.group.id, 'view']">{{ toDont.group.id }}</a>
+          </div>
+        </dd>
+      </dl>
+
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Back</span>
+      </button>
+
+      <button type="button" [routerLink]="['/to-dont', toDont.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Edit</span>
+      </button>
+    </div>
+  </div>
+</div>
