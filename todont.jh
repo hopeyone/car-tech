@@ -1,0 +1,16 @@
+entity Group {
+	name String
+}
+
+entity ToDont {
+	title String
+    description String
+}
+
+relationship OneToMany {
+  Group to ToDont
+}
+
+dto * with mapstruct
+service * with serviceClass
+    

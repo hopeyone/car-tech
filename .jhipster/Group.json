@@ -1,0 +1,27 @@
+{
+  "applications": "*",
+  "changelogDate": "20221016035610",
+  "dto": "mapstruct",
+  "embedded": false,
+  "entityTableName": "jhi_group",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String"
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "name": "Group",
+  "pagination": "no",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityName": "toDont",
+      "otherEntityRelationshipName": "group",
+      "relationshipName": "toDont",
+      "relationshipType": "one-to-many"
+    }
+  ],
+  "service": "serviceClass"
+}

@@ -3,6 +3,7 @@
     "car": {
       "home": {
         "title": "Cars",
+        "refreshListLabel": "Refresh list",
         "createLabel": "Create a new Car",
         "createOrEditLabel": "Create or edit a Car",
         "notFound": "No Cars found"
@@ -16,6 +17,7 @@
       "detail": {
         "title": "Car"
       },
+      "id": "ID",
       "model": "Model",
       "document": "Document"
     }

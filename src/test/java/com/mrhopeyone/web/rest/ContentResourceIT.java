@@ -1,268 +1,394 @@
 package com.mrhopeyone.web.rest;
 
-import com.mrhopeyone.CarTechApp;
-import com.mrhopeyone.domain.Content;
-import com.mrhopeyone.domain.Document;
-import com.mrhopeyone.repository.ContentRepository;
-import com.mrhopeyone.web.rest.errors.ExceptionTranslator;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
-import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Base64Utils;
-import org.springframework.validation.Validator;
-
-import javax.persistence.EntityManager;
-import java.util.List;
-
-import static com.mrhopeyone.web.rest.TestUtil.createFormattingConversionService;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import com.mrhopeyone.IntegrationTest;
+import com.mrhopeyone.domain.Content;
+import com.mrhopeyone.domain.Document;
+import com.mrhopeyone.repository.ContentRepository;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicLong;
+import javax.persistence.EntityManager;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Base64Utils;
+
 /**
  * Integration tests for the {@link ContentResource} REST controller.
  */
-@SpringBootTest(classes = CarTechApp.class)
-public class ContentResourceIT {
+@IntegrationTest
+@AutoConfigureMockMvc
+@WithMockUser
+class ContentResourceIT {
 
-    private static final byte[] DEFAULT_DATA = TestUtil.createByteArray(1, "0");
-    private static final byte[] UPDATED_DATA = TestUtil.createByteArray(1, "1");
-    private static final String DEFAULT_DATA_CONTENT_TYPE = "image/jpg";
-    private static final String UPDATED_DATA_CONTENT_TYPE = "image/png";
+  private static final byte[] DEFAULT_DATA = TestUtil.createByteArray(1, "0");
+  private static final byte[] UPDATED_DATA = TestUtil.createByteArray(1, "1");
+  private static final String DEFAULT_DATA_CONTENT_TYPE = "image/jpg";
+  private static final String UPDATED_DATA_CONTENT_TYPE = "image/png";
 
-    @Autowired
-    private ContentRepository contentRepository;
+  private static final String ENTITY_API_URL = "/api/contents";
+  private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
 
-    @Autowired
-    private MappingJackson2HttpMessageConverter jacksonMessageConverter;
+  private static Random random = new Random();
+  private static AtomicLong count = new AtomicLong(random.nextInt() + (2 * Integer.MAX_VALUE));
 
-    @Autowired
-    private PageableHandlerMethodArgumentResolver pageableArgumentResolver;
+  @Autowired
+  private ContentRepository contentRepository;
 
-    @Autowired
-    private ExceptionTranslator exceptionTranslator;
+  @Autowired
+  private EntityManager em;
 
-    @Autowired
-    private EntityManager em;
+  @Autowired
+  private MockMvc restContentMockMvc;
 
-    @Autowired
-    private Validator validator;
+  private Content content;
 
-    private MockMvc restContentMockMvc;
-
-    private Content content;
-
-    @BeforeEach
-    public void setup() {
-        MockitoAnnotations.initMocks(this);
-        final ContentResource contentResource = new ContentResource(contentRepository);
-        this.restContentMockMvc = MockMvcBuilders.standaloneSetup(contentResource)
-            .setCustomArgumentResolvers(pageableArgumentResolver)
-            .setControllerAdvice(exceptionTranslator)
-            .setConversionService(createFormattingConversionService())
-            .setMessageConverters(jacksonMessageConverter)
-            .setValidator(validator).build();
+  /**
+   * Create an entity for this test.
+   *
+   * This is a static method, as tests for other entities might also need it,
+   * if they test an entity which requires the current entity.
+   */
+  public static Content createEntity(EntityManager em) {
+    Content content = new Content().data(DEFAULT_DATA).dataContentType(DEFAULT_DATA_CONTENT_TYPE);
+    // Add required entity
+    Document document;
+    if (TestUtil.findAll(em, Document.class).isEmpty()) {
+      document = DocumentResourceIT.createEntity(em);
+      em.persist(document);
+      em.flush();
+    } else {
+      document = TestUtil.findAll(em, Document.class).get(0);
     }
+    content.setDocument(document);
+    return content;
+  }
 
-    /**
-     * Create an entity for this test.
-     *
-     * This is a static method, as tests for other entities might also need it,
-     * if they test an entity which requires the current entity.
-     */
-    public static Content createEntity(EntityManager em) {
-        Content content = new Content()
-            .data(DEFAULT_DATA)
-            .dataContentType(DEFAULT_DATA_CONTENT_TYPE);
-        // Add required entity
-        Document document;
-        if (TestUtil.findAll(em, Document.class).isEmpty()) {
-            document = DocumentResourceIT.createEntity(em);
-            em.persist(document);
-            em.flush();
-        } else {
-            document = TestUtil.findAll(em, Document.class).get(0);
-        }
-        content.setDocument(document);
-        return content;
+  /**
+   * Create an updated entity for this test.
+   *
+   * This is a static method, as tests for other entities might also need it,
+   * if they test an entity which requires the current entity.
+   */
+  public static Content createUpdatedEntity(EntityManager em) {
+    Content content = new Content().data(UPDATED_DATA).dataContentType(UPDATED_DATA_CONTENT_TYPE);
+    // Add required entity
+    Document document;
+    if (TestUtil.findAll(em, Document.class).isEmpty()) {
+      document = DocumentResourceIT.createUpdatedEntity(em);
+      em.persist(document);
+      em.flush();
+    } else {
+      document = TestUtil.findAll(em, Document.class).get(0);
     }
-    /**
-     * Create an updated entity for this test.
-     *
-     * This is a static method, as tests for other entities might also need it,
-     * if they test an entity which requires the current entity.
-     */
-    public static Content createUpdatedEntity(EntityManager em) {
-        Content content = new Content()
-            .data(UPDATED_DATA)
-            .dataContentType(UPDATED_DATA_CONTENT_TYPE);
-        // Add required entity
-        Document document;
-        if (TestUtil.findAll(em, Document.class).isEmpty()) {
-            document = DocumentResourceIT.createUpdatedEntity(em);
-            em.persist(document);
-            em.flush();
-        } else {
-            document = TestUtil.findAll(em, Document.class).get(0);
-        }
-        content.setDocument(document);
-        return content;
-    }
+    content.setDocument(document);
+    return content;
+  }
 
-    @BeforeEach
-    public void initTest() {
-        content = createEntity(em);
-    }
+  @BeforeEach
+  public void initTest() {
+    content = createEntity(em);
+  }
 
-    @Test
-    @Transactional
-    public void createContent() throws Exception {
-        int databaseSizeBeforeCreate = contentRepository.findAll().size();
+  @Test
+  @Transactional
+  void createContent() throws Exception {
+    int databaseSizeBeforeCreate = contentRepository.findAll().size();
+    // Create the Content
+    restContentMockMvc
+      .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(content)))
+      .andExpect(status().isCreated());
 
-        // Create the Content
-        restContentMockMvc.perform(post("/api/contents")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(content)))
-            .andExpect(status().isCreated());
+    // Validate the Content in the database
+    List<Content> contentList = contentRepository.findAll();
+    assertThat(contentList).hasSize(databaseSizeBeforeCreate + 1);
+    Content testContent = contentList.get(contentList.size() - 1);
+    assertThat(testContent.getData()).isEqualTo(DEFAULT_DATA);
+    assertThat(testContent.getDataContentType()).isEqualTo(DEFAULT_DATA_CONTENT_TYPE);
+  }
 
-        // Validate the Content in the database
-        List<Content> contentList = contentRepository.findAll();
-        assertThat(contentList).hasSize(databaseSizeBeforeCreate + 1);
-        Content testContent = contentList.get(contentList.size() - 1);
-        assertThat(testContent.getData()).isEqualTo(DEFAULT_DATA);
-        assertThat(testContent.getDataContentType()).isEqualTo(DEFAULT_DATA_CONTENT_TYPE);
-    }
+  @Test
+  @Transactional
+  void createContentWithExistingId() throws Exception {
+    // Create the Content with an existing ID
+    content.setId(1L);
 
-    @Test
-    @Transactional
-    public void createContentWithExistingId() throws Exception {
-        int databaseSizeBeforeCreate = contentRepository.findAll().size();
+    int databaseSizeBeforeCreate = contentRepository.findAll().size();
 
-        // Create the Content with an existing ID
-        content.setId(1L);
+    // An entity with an existing ID cannot be created, so this API call must fail
+    restContentMockMvc
+      .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(content)))
+      .andExpect(status().isBadRequest());
 
-        // An entity with an existing ID cannot be created, so this API call must fail
-        restContentMockMvc.perform(post("/api/contents")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(content)))
-            .andExpect(status().isBadRequest());
+    // Validate the Content in the database
+    List<Content> contentList = contentRepository.findAll();
+    assertThat(contentList).hasSize(databaseSizeBeforeCreate);
+  }
 
-        // Validate the Content in the database
-        List<Content> contentList = contentRepository.findAll();
-        assertThat(contentList).hasSize(databaseSizeBeforeCreate);
-    }
+  @Test
+  @Transactional
+  void getAllContents() throws Exception {
+    // Initialize the database
+    contentRepository.saveAndFlush(content);
 
+    // Get all the contentList
+    restContentMockMvc
+      .perform(get(ENTITY_API_URL + "?sort=id,desc"))
+      .andExpect(status().isOk())
+      .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+      .andExpect(jsonPath("$.[*].id").value(hasItem(content.getId().intValue())))
+      .andExpect(jsonPath("$.[*].dataContentType").value(hasItem(DEFAULT_DATA_CONTENT_TYPE)))
+      .andExpect(jsonPath("$.[*].data").value(hasItem(Base64Utils.encodeToString(DEFAULT_DATA))));
+  }
 
-    @Test
-    @Transactional
-    public void getAllContents() throws Exception {
-        // Initialize the database
-        contentRepository.saveAndFlush(content);
+  @Test
+  @Transactional
+  void getContent() throws Exception {
+    // Initialize the database
+    contentRepository.saveAndFlush(content);
 
-        // Get all the contentList
-        restContentMockMvc.perform(get("/api/contents?sort=id,desc"))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-            .andExpect(jsonPath("$.[*].id").value(hasItem(content.getId().intValue())))
-            .andExpect(jsonPath("$.[*].dataContentType").value(hasItem(DEFAULT_DATA_CONTENT_TYPE)))
-            .andExpect(jsonPath("$.[*].data").value(hasItem(Base64Utils.encodeToString(DEFAULT_DATA))));
-    }
-    
-    @Test
-    @Transactional
-    public void getContent() throws Exception {
-        // Initialize the database
-        contentRepository.saveAndFlush(content);
+    // Get the content
+    restContentMockMvc
+      .perform(get(ENTITY_API_URL_ID, content.getId()))
+      .andExpect(status().isOk())
+      .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+      .andExpect(jsonPath("$.id").value(content.getId().intValue()))
+      .andExpect(jsonPath("$.dataContentType").value(DEFAULT_DATA_CONTENT_TYPE))
+      .andExpect(jsonPath("$.data").value(Base64Utils.encodeToString(DEFAULT_DATA)));
+  }
 
-        // Get the content
-        restContentMockMvc.perform(get("/api/contents/{id}", content.getId()))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-            .andExpect(jsonPath("$.id").value(content.getId().intValue()))
-            .andExpect(jsonPath("$.dataContentType").value(DEFAULT_DATA_CONTENT_TYPE))
-            .andExpect(jsonPath("$.data").value(Base64Utils.encodeToString(DEFAULT_DATA)));
-    }
+  @Test
+  @Transactional
+  void getNonExistingContent() throws Exception {
+    // Get the content
+    restContentMockMvc.perform(get(ENTITY_API_URL_ID, Long.MAX_VALUE)).andExpect(status().isNotFound());
+  }
 
-    @Test
-    @Transactional
-    public void getNonExistingContent() throws Exception {
-        // Get the content
-        restContentMockMvc.perform(get("/api/contents/{id}", Long.MAX_VALUE))
-            .andExpect(status().isNotFound());
-    }
+  @Test
+  @Transactional
+  void putExistingContent() throws Exception {
+    // Initialize the database
+    contentRepository.saveAndFlush(content);
 
-    @Test
-    @Transactional
-    public void updateContent() throws Exception {
-        // Initialize the database
-        contentRepository.saveAndFlush(content);
+    int databaseSizeBeforeUpdate = contentRepository.findAll().size();
 
-        int databaseSizeBeforeUpdate = contentRepository.findAll().size();
+    // Update the content
+    Content updatedContent = contentRepository.findById(content.getId()).get();
+    // Disconnect from session so that the updates on updatedContent are not directly saved in db
+    em.detach(updatedContent);
+    updatedContent.data(UPDATED_DATA).dataContentType(UPDATED_DATA_CONTENT_TYPE);
 
-        // Update the content
-        Content updatedContent = contentRepository.findById(content.getId()).get();
-        // Disconnect from session so that the updates on updatedContent are not directly saved in db
-        em.detach(updatedContent);
-        updatedContent
-            .data(UPDATED_DATA)
-            .dataContentType(UPDATED_DATA_CONTENT_TYPE);
+    restContentMockMvc
+      .perform(
+        put(ENTITY_API_URL_ID, updatedContent.getId())
+          .contentType(MediaType.APPLICATION_JSON)
+          .content(TestUtil.convertObjectToJsonBytes(updatedContent))
+      )
+      .andExpect(status().isOk());
 
-        restContentMockMvc.perform(put("/api/contents")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(updatedContent)))
-            .andExpect(status().isOk());
+    // Validate the Content in the database
+    List<Content> contentList = contentRepository.findAll();
+    assertThat(contentList).hasSize(databaseSizeBeforeUpdate);
+    Content testContent = contentList.get(contentList.size() - 1);
+    assertThat(testContent.getData()).isEqualTo(UPDATED_DATA);
+    assertThat(testContent.getDataContentType()).isEqualTo(UPDATED_DATA_CONTENT_TYPE);
+  }
 
-        // Validate the Content in the database
-        List<Content> contentList = contentRepository.findAll();
-        assertThat(contentList).hasSize(databaseSizeBeforeUpdate);
-        Content testContent = contentList.get(contentList.size() - 1);
-        assertThat(testContent.getData()).isEqualTo(UPDATED_DATA);
-        assertThat(testContent.getDataContentType()).isEqualTo(UPDATED_DATA_CONTENT_TYPE);
-    }
+  @Test
+  @Transactional
+  void putNonExistingContent() throws Exception {
+    int databaseSizeBeforeUpdate = contentRepository.findAll().size();
+    content.setId(count.incrementAndGet());
 
-    @Test
-    @Transactional
-    public void updateNonExistingContent() throws Exception {
-        int databaseSizeBeforeUpdate = contentRepository.findAll().size();
+    // If the entity doesn't have an ID, it will throw BadRequestAlertException
+    restContentMockMvc
+      .perform(
+        put(ENTITY_API_URL_ID, content.getId()).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(content))
+      )
+      .andExpect(status().isBadRequest());
 
-        // Create the Content
+    // Validate the Content in the database
+    List<Content> contentList = contentRepository.findAll();
+    assertThat(contentList).hasSize(databaseSizeBeforeUpdate);
+  }
 
-        // If the entity doesn't have an ID, it will throw BadRequestAlertException
-        restContentMockMvc.perform(put("/api/contents")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(content)))
-            .andExpect(status().isBadRequest());
+  @Test
+  @Transactional
+  void putWithIdMismatchContent() throws Exception {
+    int databaseSizeBeforeUpdate = contentRepository.findAll().size();
+    content.setId(count.incrementAndGet());
 
-        // Validate the Content in the database
-        List<Content> contentList = contentRepository.findAll();
-        assertThat(contentList).hasSize(databaseSizeBeforeUpdate);
-    }
+    // If url ID doesn't match entity ID, it will throw BadRequestAlertException
+    restContentMockMvc
+      .perform(
+        put(ENTITY_API_URL_ID, count.incrementAndGet())
+          .contentType(MediaType.APPLICATION_JSON)
+          .content(TestUtil.convertObjectToJsonBytes(content))
+      )
+      .andExpect(status().isBadRequest());
 
-    @Test
-    @Transactional
-    public void deleteContent() throws Exception {
-        // Initialize the database
-        contentRepository.saveAndFlush(content);
+    // Validate the Content in the database
+    List<Content> contentList = contentRepository.findAll();
+    assertThat(contentList).hasSize(databaseSizeBeforeUpdate);
+  }
 
-        int databaseSizeBeforeDelete = contentRepository.findAll().size();
+  @Test
+  @Transactional
+  void putWithMissingIdPathParamContent() throws Exception {
+    int databaseSizeBeforeUpdate = contentRepository.findAll().size();
+    content.setId(count.incrementAndGet());
 
-        // Delete the content
-        restContentMockMvc.perform(delete("/api/contents/{id}", content.getId())
-            .accept(TestUtil.APPLICATION_JSON_UTF8))
-            .andExpect(status().isNoContent());
+    // If url ID doesn't match entity ID, it will throw BadRequestAlertException
+    restContentMockMvc
+      .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(content)))
+      .andExpect(status().isMethodNotAllowed());
 
-        // Validate the database contains one less item
-        List<Content> contentList = contentRepository.findAll();
-        assertThat(contentList).hasSize(databaseSizeBeforeDelete - 1);
-    }
+    // Validate the Content in the database
+    List<Content> contentList = contentRepository.findAll();
+    assertThat(contentList).hasSize(databaseSizeBeforeUpdate);
+  }
+
+  @Test
+  @Transactional
+  void partialUpdateContentWithPatch() throws Exception {
+    // Initialize the database
+    contentRepository.saveAndFlush(content);
+
+    int databaseSizeBeforeUpdate = contentRepository.findAll().size();
+
+    // Update the content using partial update
+    Content partialUpdatedContent = new Content();
+    partialUpdatedContent.setId(content.getId());
+
+    partialUpdatedContent.data(UPDATED_DATA).dataContentType(UPDATED_DATA_CONTENT_TYPE);
+
+    restContentMockMvc
+      .perform(
+        patch(ENTITY_API_URL_ID, partialUpdatedContent.getId())
+          .contentType("application/merge-patch+json")
+          .content(TestUtil.convertObjectToJsonBytes(partialUpdatedContent))
+      )
+      .andExpect(status().isOk());
+
+    // Validate the Content in the database
+    List<Content> contentList = contentRepository.findAll();
+    assertThat(contentList).hasSize(databaseSizeBeforeUpdate);
+    Content testContent = contentList.get(contentList.size() - 1);
+    assertThat(testContent.getData()).isEqualTo(UPDATED_DATA);
+    assertThat(testContent.getDataContentType()).isEqualTo(UPDATED_DATA_CONTENT_TYPE);
+  }
+
+  @Test
+  @Transactional
+  void fullUpdateContentWithPatch() throws Exception {
+    // Initialize the database
+    contentRepository.saveAndFlush(content);
+
+    int databaseSizeBeforeUpdate = contentRepository.findAll().size();
+
+    // Update the content using partial update
+    Content partialUpdatedContent = new Content();
+    partialUpdatedContent.setId(content.getId());
+
+    partialUpdatedContent.data(UPDATED_DATA).dataContentType(UPDATED_DATA_CONTENT_TYPE);
+
+    restContentMockMvc
+      .perform(
+        patch(ENTITY_API_URL_ID, partialUpdatedContent.getId())
+          .contentType("application/merge-patch+json")
+          .content(TestUtil.convertObjectToJsonBytes(partialUpdatedContent))
+      )
+      .andExpect(status().isOk());
+
+    // Validate the Content in the database
+    List<Content> contentList = contentRepository.findAll();
+    assertThat(contentList).hasSize(databaseSizeBeforeUpdate);
+    Content testContent = contentList.get(contentList.size() - 1);
+    assertThat(testContent.getData()).isEqualTo(UPDATED_DATA);
+    assertThat(testContent.getDataContentType()).isEqualTo(UPDATED_DATA_CONTENT_TYPE);
+  }
+
+  @Test
+  @Transactional
+  void patchNonExistingContent() throws Exception {
+    int databaseSizeBeforeUpdate = contentRepository.findAll().size();
+    content.setId(count.incrementAndGet());
+
+    // If the entity doesn't have an ID, it will throw BadRequestAlertException
+    restContentMockMvc
+      .perform(
+        patch(ENTITY_API_URL_ID, content.getId())
+          .contentType("application/merge-patch+json")
+          .content(TestUtil.convertObjectToJsonBytes(content))
+      )
+      .andExpect(status().isBadRequest());
+
+    // Validate the Content in the database
+    List<Content> contentList = contentRepository.findAll();
+    assertThat(contentList).hasSize(databaseSizeBeforeUpdate);
+  }
+
+  @Test
+  @Transactional
+  void patchWithIdMismatchContent() throws Exception {
+    int databaseSizeBeforeUpdate = contentRepository.findAll().size();
+    content.setId(count.incrementAndGet());
+
+    // If url ID doesn't match entity ID, it will throw BadRequestAlertException
+    restContentMockMvc
+      .perform(
+        patch(ENTITY_API_URL_ID, count.incrementAndGet())
+          .contentType("application/merge-patch+json")
+          .content(TestUtil.convertObjectToJsonBytes(content))
+      )
+      .andExpect(status().isBadRequest());
+
+    // Validate the Content in the database
+    List<Content> contentList = contentRepository.findAll();
+    assertThat(contentList).hasSize(databaseSizeBeforeUpdate);
+  }
+
+  @Test
+  @Transactional
+  void patchWithMissingIdPathParamContent() throws Exception {
+    int databaseSizeBeforeUpdate = contentRepository.findAll().size();
+    content.setId(count.incrementAndGet());
+
+    // If url ID doesn't match entity ID, it will throw BadRequestAlertException
+    restContentMockMvc
+      .perform(patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(TestUtil.convertObjectToJsonBytes(content)))
+      .andExpect(status().isMethodNotAllowed());
+
+    // Validate the Content in the database
+    List<Content> contentList = contentRepository.findAll();
+    assertThat(contentList).hasSize(databaseSizeBeforeUpdate);
+  }
+
+  @Test
+  @Transactional
+  void deleteContent() throws Exception {
+    // Initialize the database
+    contentRepository.saveAndFlush(content);
+
+    int databaseSizeBeforeDelete = contentRepository.findAll().size();
+
+    // Delete the content
+    restContentMockMvc
+      .perform(delete(ENTITY_API_URL_ID, content.getId()).accept(MediaType.APPLICATION_JSON))
+      .andExpect(status().isNoContent());
+
+    // Validate the database contains one less item
+    List<Content> contentList = contentRepository.findAll();
+    assertThat(contentList).hasSize(databaseSizeBeforeDelete - 1);
+  }
 }

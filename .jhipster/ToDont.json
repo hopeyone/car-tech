@@ -1,0 +1,31 @@
+{
+  "applications": "*",
+  "changelogDate": "20221016035611",
+  "dto": "mapstruct",
+  "embedded": false,
+  "entityTableName": "to_dont",
+  "fields": [
+    {
+      "fieldName": "title",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "description",
+      "fieldType": "String"
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "name": "ToDont",
+  "pagination": "no",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityName": "group",
+      "otherEntityRelationshipName": "toDont",
+      "relationshipName": "group",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "service": "serviceClass"
+}

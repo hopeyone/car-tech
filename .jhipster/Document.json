@@ -1,51 +1,47 @@
 {
-    "name": "Document",
-    "fields": [
-        {
-            "fieldName": "title",
-            "fieldType": "String",
-            "fieldValidateRules": [
-                "required"
-            ]
-        },
-        {
-            "fieldName": "size",
-            "fieldType": "Long",
-            "fieldValidateRules": [
-                "required"
-            ]
-        },
-        {
-            "fieldName": "mimeType",
-            "fieldType": "String"
-        }
-    ],
-    "relationships": [
-        {
-            "relationshipType": "one-to-one",
-            "otherEntityName": "content",
-            "otherEntityRelationshipName": "document",
-            "relationshipName": "content",
-            "otherEntityField": "id",
-            "ownerSide": true
-        },
-        {
-            "relationshipType": "many-to-one",
-            "otherEntityName": "car",
-            "otherEntityRelationshipName": "document",
-            "relationshipValidateRules": "required",
-            "relationshipName": "car",
-            "otherEntityField": "id"
-        }
-    ],
-    "changelogDate": "20191217061438",
-    "entityTableName": "document",
-    "dto": "no",
-    "pagination": "no",
-    "service": "no",
-    "jpaMetamodelFiltering": false,
-    "fluentMethods": true,
-    "readOnly": false,
-    "clientRootFolder": "",
-    "applications": "*"
+  "applications": "*",
+  "changelogDate": "20191217061438",
+  "clientRootFolder": "",
+  "dto": "no",
+  "entityTableName": "document",
+  "fields": [
+    {
+      "fieldName": "title",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "size",
+      "fieldType": "Long",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "mimeType",
+      "fieldType": "String"
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "name": "Document",
+  "pagination": "no",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityField": "id",
+      "otherEntityName": "content",
+      "otherEntityRelationshipName": "document",
+      "ownerSide": true,
+      "relationshipName": "content",
+      "relationshipType": "one-to-one"
+    },
+    {
+      "otherEntityField": "id",
+      "otherEntityName": "car",
+      "otherEntityRelationshipName": "document",
+      "relationshipName": "car",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ],
+  "service": "no"
 }

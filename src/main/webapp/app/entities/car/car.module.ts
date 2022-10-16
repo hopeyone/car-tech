@@ -1,16 +1,13 @@
 import { NgModule } from '@angular/core';
-import { RouterModule } from '@angular/router';
-
-import { CarTechSharedModule } from 'app/shared/shared.module';
-import { CarComponent } from './car.component';
-import { CarDetailComponent } from './car-detail.component';
-import { CarUpdateComponent } from './car-update.component';
-import { CarDeleteDialogComponent } from './car-delete-dialog.component';
-import { carRoute } from './car.route';
+import { SharedModule } from 'app/shared/shared.module';
+import { CarComponent } from './list/car.component';
+import { CarDetailComponent } from './detail/car-detail.component';
+import { CarUpdateComponent } from './update/car-update.component';
+import { CarDeleteDialogComponent } from './delete/car-delete-dialog.component';
+import { CarRoutingModule } from './route/car-routing.module';
 
 @NgModule({
-  imports: [CarTechSharedModule, RouterModule.forChild(carRoute)],
+  imports: [SharedModule, CarRoutingModule],
   declarations: [CarComponent, CarDetailComponent, CarUpdateComponent, CarDeleteDialogComponent],
-  entryComponents: [CarDeleteDialogComponent]
 })
-export class CarTechCarModule {}
+export class CarModule {}
